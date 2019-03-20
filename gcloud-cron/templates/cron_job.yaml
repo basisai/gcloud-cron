@@ -135,8 +135,8 @@ spec:
                 {{- if .Values.env }}
                 {{- toYaml .Values.env | nindent 16 }}
                 {{- end }}
-              args:
-                - "chmod +x /config/entrypoint.sh && /config/entrypoint.sh"
+              command:
+                - /config/entrypoint.sh
           volumes:
             - name: config
               configMap:
@@ -150,6 +150,7 @@ spec:
                     path: vault_ca.pem
                   - key: entrypoint
                     path: entrypoint.sh
+                    mode: 0777
             - name: vault-token
               emptyDir: {}
             - name: gcp-service-account
