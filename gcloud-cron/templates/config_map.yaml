@@ -20,6 +20,7 @@ data:
   entrypoint: {{ .Values.entrypoint | quote }}
   consulTemplate: |
     pid_file = "/pid"
+    kill_signal = "SIGTERM"
 
     vault {
       vault_agent_token_file = "/vault/token"
