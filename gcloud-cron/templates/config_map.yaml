@@ -69,7 +69,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "gcloud-cron.name" . }}-additional
+  name: {{ include "gcloud-cron.fullname" . }}-additional
   labels:
     app.kubernetes.io/name: {{ include "gcloud-cron.name" . }}
     helm.sh/chart: {{ include "gcloud-cron.chart" . }}
