@@ -56,6 +56,7 @@ spec:
           serviceAccountName: {{ .Values.serviceAccount }}
           automountServiceAccountToken: true
           restartPolicy: OnFailure
+          {{- if .Values.vault.enabled }}
           initContainers:
             - name: vault-agent
               image: "{{ .Values.vault.image }}:{{ .Values.vault.tag }}"
@@ -84,37 +85,8 @@ spec:
                 - agent
                 - -config=/config/vault_agent.hcl
               resources:
-                {{- toYaml .Values.resources.consulTemplate | nindent 16 }}
-            - name: consul-template
-              image: "{{ .Values.consulTemplate.image }}:{{ .Values.consulTemplate.tag }}"
-              imagePullPolicy: {{ .Values.consulTemplate.pullPolicy }}
-              resources:
-                {{- toYaml .Values.resources.consulTemplate | nindent 16 }}
-              volumeMounts:
-                - name: config
-                  mountPath: /config
-                  readOnly: true
-                - name: vault-token
-                  mountPath: /vault
-                  readOnly: true
-                - name: gcp-service-account
-                  mountPath: /gcp
-              env:
-                - name: VAULT_ADDR
-                  value: {{ include "vaultAddress" . | quote }}
-                - name: VAULT_CAPATH
-                  value: /config/vault_ca.pem
-                {{- if .Values.consulTemplate.env }}
-                {{- toYaml .Values.consulTemplate.env | nindent 16 }}
-                {{- end }}
-              command:
-                - "/bin/consul-template"
-              args:
-                - "-once"
-                - "-config=/config/consul_template.hcl"
-                - "-log-level=debug"
-              resources:
-                {{- toYaml .Values.resources.consulTemplate | nindent 16 }}
+                {{- toYaml .Values.resources.vaultAgent | nindent 16 }}
+          {{- end }}
           containers:
             - name: {{ .Chart.Name }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -122,39 +94,42 @@ spec:
               resources:
                 {{- toYaml .Values.resources.backup | nindent 16 }}
               volumeMounts:
+                {{- if .Values.vault.enabled }}
                 - name: gcp-service-account
                   mountPath: /gcp
-                - name: config
-                  mountPath: /config
+                {{- end }}
+                - name: entrypoint
+                  mountPath: /entrypoint
                   readOnly: true
                 - name: additional
                   mountPath: {{ .Values.additionalMountPoint }}
               env:
+                {{- if .Values.vault.enabled }}
                 - name: GOOGLE_CREDENTIALS
                   value: /gcp/service_account.json
+                {{- end }}
                 {{- if .Values.env }}
                 {{- toYaml .Values.env | nindent 16 }}
                 {{- end }}
               command:
-                - /config/entrypoint.sh
+                - /entrypoint/entrypoint.sh
           volumes:
-            - name: config
+            - name: entrypoint
               configMap:
                 name: {{ include "gcloud-cron.fullname" . }}
                 items:
-                  - key: vaultAgent
-                    path: vault_agent.hcl
-                  - key: consulTemplate
-                    path: consul_template.hcl
-                  - key: vaultCA
-                    path: vault_ca.pem
-                  - key: entrypoint
+                  - key: entrypoint.sh
                     path: entrypoint.sh
                     mode: 0777
+            {{- if .Values.vault.enabled }}
+            - name: config
+              configMap:
+                name: {{ include "gcloud-cron.fullname" . }}
             - name: vault-token
               emptyDir: {}
             - name: gcp-service-account
               emptyDir: {}
+            {{- end }}
             - name: additional
               configMap:
                 name: {{ include "gcloud-cron.name" . }}-additional

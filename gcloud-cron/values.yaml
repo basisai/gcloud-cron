@@ -21,6 +21,7 @@ fullnameOverride: ""
 serviceAccount: "gcloud"
 
 vault:
+  enabled: true
   image: vault
   tag: 1.0.3
   pullPolicy: IfNotPresent
@@ -34,17 +35,7 @@ vault:
     path: ""
   env: []
 
-consul:
-  address: consul-server.service.consul:8500
-
-consulTemplate:
-  image: hashicorp/consul-template
-  tag: 0.20.0-light
-  pullPolicy: IfNotPresent
-  env: []
-
 resources:
-  consulTemplate: {}
   vaultAgent: {}
   backup:
     limits:
