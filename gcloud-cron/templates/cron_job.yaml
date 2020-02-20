@@ -132,7 +132,7 @@ spec:
             {{- end }}
             - name: additional
               configMap:
-                name: {{ include "gcloud-cron.name" . }}-additional
+                name: {{ include "gcloud-cron.fullname" . }}-additional
           {{- with .Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
