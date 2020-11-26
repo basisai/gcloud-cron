@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TEST_IMAGE="${TEST_IMAGE:-quay.io/helmpack/chart-testing:v2.2.0}"
+TEST_IMAGE="${TEST_IMAGE:-quay.io/helmpack/chart-testing:v3.0.0}"
 
 docker run --rm -it -v "$(pwd):/gcloud-cron" --workdir "/gcloud-cron" \
     "${TEST_IMAGE}" \
